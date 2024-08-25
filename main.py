@@ -1,6 +1,10 @@
 import streamlit as st 
 from sentence_transformers import SentenceTransformer
-from langchain_google_genai import ChatGoogleGenerativeAI 
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -10,6 +14,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import os 
 
 from dotenv import load_dotenv, dotenv_values 
+
 
 # loading variables from .env file
 load_dotenv() 

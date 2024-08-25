@@ -2,15 +2,13 @@ import streamlit as st
 from sentence_transformers import SentenceTransformer
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 # from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.document_loaders import DirectoryLoader
 import os 
 
 from dotenv import load_dotenv, dotenv_values 
@@ -22,9 +20,16 @@ os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 
 
 
-from langchain_community.document_loaders import DirectoryLoader
 
-    
+
+# if u Havent installed them 
+# !pip install unstructured
+# !pip install python-magic-bin
+# !pip install -U sentence-transformers
+# !pip install -qU "langchain-chroma>=0.1.2"
+# !pip install streamlit 
+# !pip install langchain-google-vertexai
+        
 llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-flash",
     temperature=0,
@@ -47,7 +52,7 @@ class embedding:
 
 
 @st.cache_data
-def load_data_from_folders(main_folder_path):
+def load_data_from_folders(main_folder_path , catigory_type):
     data = {}
     for category_folder in os.listdir(main_folder_path):
         category_label = category_folder 
@@ -55,12 +60,16 @@ def load_data_from_folders(main_folder_path):
         loader = DirectoryLoader(f'{category_path}', glob="**/*.txt" ,  use_multithreading=True , show_progress=True)
         data[category_label]= loader
         
-    
-    return data["Culture"].load()
+    if catigory_type in data.keys():
+        return data[catigory_type].load()
+    # else:
+    #     whole_data = []
+    #     for key in data.keys:
+    #         whole_data.extend(data[key].load())
+    #     return whole_data
 
-
-def response_llm(prmpt):
-    Culture = load_data_from_folders("archive_2")
+def response_llm(prmpt , catigory_type):
+    Culture = load_data_from_folders("archive_2", catigory_type)
 
 
 
@@ -113,7 +122,8 @@ def response_llm(prmpt):
 
 
 st.title("Simple chat")
-
+st.sidebar.subheader(f"settings")
+type = st.sidebar.selectbox(label="Select data" ,options = os.listdir("archive_2"), index =0)
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -134,7 +144,7 @@ if prompt := st.chat_input("What is up?"):
 
     
     with st.chat_message("assistant"):
-        response = st.write(response_llm(prompt))
+        response = st.write(response_llm(prompt , type))
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
 

@@ -42,12 +42,14 @@ llm = ChatGoogleGenerativeAI(
 
 class embedding:
     def __init__(self):
-        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+        self.model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+        # self.model = SentenceTransformer("all-MiniLM-L6-v2")
     def embed_documents(self , docs):
         embeddings = self.model.encode(docs)
         return embeddings.tolist()
     def embed_query(self , query):
         return self.model.encode(query).tolist()
+
 
 
 
@@ -88,12 +90,12 @@ def response_llm(prmpt , catigory_type):
     def format_docs(docs):
         return " ".join(doc.page_content for doc in docs)
 
+# and no less than 100 words.
 
     prompt = """
     You are an Ai bot your role is to answer the users questions form the knowledge  that in retriver 
     at the end of the answer thank the user 
-    The answer must be detaild and no less than 100 words.
-
+    The answer must be detaild 
     what to do if the answer is not envluded in the prompt or the context 
         1. apologies to the user.
         2. tell the user that you do not know the answer for the asked question 

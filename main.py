@@ -40,10 +40,12 @@ llm = ChatGoogleGenerativeAI(
 )
 
 
+
 class embedding:
     def __init__(self):
-        self.model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-        # self.model = SentenceTransformer("all-MiniLM-L6-v2")
+        # self.model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+        # self.model = SentenceTransformer("intfloat/multilingual-e5-large")
     def embed_documents(self , docs):
         embeddings = self.model.encode(docs)
         return embeddings.tolist()
@@ -78,9 +80,9 @@ def response_llm(prmpt , catigory_type):
     docs = Culture
 
 
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=3000, chunk_overlap=200)
-    splits = text_splitter.split_documents(docs)
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embedding())
+    # text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    # splits = text_splitter.split_documents(docs)
+    vectorstore = Chroma.from_documents(documents=docs, embedding=embedding())
 
     # Retrieve and generate using the relevant snippets of the blog.
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
@@ -88,30 +90,35 @@ def response_llm(prmpt , catigory_type):
 
 
     def format_docs(docs):
-        return " ".join(doc.page_content for doc in docs)
+        return "\n\n".join(doc.page_content for doc in docs)
 
 # and no less than 100 words.
-
+# ماذا تقيم الفنانة ليتا كابيلوت
+# ما هيه الفعاليات البرنامج الثقافي لدائرة الثقافة والإعلام بالشارقة في شهر يونيو/حزيران
     prompt = """
-    You are an Ai bot your role is to answer the users questions form the knowledge  that in retriver 
-    at the end of the answer thank the user 
-    The answer must be detaild 
-    what to do if the answer is not envluded in the prompt or the context 
-        1. apologies to the user.
-        2. tell the user that you do not know the answer for the asked question 
-        3. ask the user if he has more question to ask. 
-        4. do not mention anything about the context.
+You are an Ai bot your role is to answer the users questions form the knowledge 
+at the end of the answer thank the user 
+The answer must be detaild 
 
-    for the asnwer:
-        1. The output must be the answer only without any additional thoughts..
+what to do if the answer is not envluded in the prompt or the context 
+    1. apologies to the user.
+    2. tell the user that you do not know the answer for the asked question 
+    3. ask the user if he has more question to ask. 
+    4. do not mention anything about the context.
 
-    knowledge you know:
-    {context}
+for the asnwer:
+    1. The output must be the answer only without any additional thoughts..
+    2. do not answer with anything that is not in knowledge 
+    3. do not add extra words to response that is not in knowledge 
+    
+knowledge you know:
+{context}
 
-    Question : {question}
+Question : {question}
 
-    answer:
-    """
+answer:
+"""
+
     prompt = ChatPromptTemplate.from_template(prompt)
 
     rag_chain = (

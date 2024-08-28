@@ -12,6 +12,8 @@ from langchain_community.document_loaders import DirectoryLoader
 import os 
 
 from dotenv import load_dotenv, dotenv_values 
+st.sidebar.subheader(f"settings")
+st.sidebar.write("Dont forget to create a file called .env then add a variable called `GOOGLE_API_KEY`=`Your api key` good luck")
 
 
 # loading variables from .env file
@@ -66,11 +68,11 @@ def load_data_from_folders(main_folder_path , catigory_type):
         
     if catigory_type in data.keys():
         return data[catigory_type].load()
-    # else:
-    #     whole_data = []
-    #     for key in data.keys:
-    #         whole_data.extend(data[key].load())
-    #     return whole_data
+    else:
+        whole_data = []
+        for key in data.keys:
+            whole_data.extend(data[key].load())
+        return whole_data
 
 def response_llm(prmpt , catigory_type):
     Culture = load_data_from_folders("archive_2", catigory_type)
@@ -131,8 +133,9 @@ answer:
 
 
 st.title("Simple chat")
-st.sidebar.subheader(f"settings")
-type = st.sidebar.selectbox(label="Select data" ,options = os.listdir("archive_2"), index =0)
+type = st.sidebar.selectbox(label="Select data" ,options = os.listdir("archive_2").extend("Full Data"), index =0)
+if type=="Full Data":
+    st.sidebar.text("its will take a very long time.\nSend a message than the data will load it self")
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []

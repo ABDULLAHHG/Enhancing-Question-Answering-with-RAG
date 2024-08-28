@@ -13,12 +13,7 @@ import os
 
 from dotenv import load_dotenv, dotenv_values 
 st.sidebar.subheader(f"settings")
-st.sidebar.write("Dont forget to create a file called .env then add a variable called `GOOGLE_API_KEY`=`Your api key` good luck")
-
-
-# loading variables from .env file
-load_dotenv() 
-os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
+st.sidebar.write("")
 
 
 
@@ -31,15 +26,7 @@ os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 # !pip install -qU "langchain-chroma>=0.1.2"
 # !pip install streamlit 
 # !pip install langchain-google-vertexai
-        
-llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-  
-)
+
 
 
 
@@ -132,31 +119,49 @@ answer:
     return rag_chain.invoke(prmpt)
 
 
-st.title("Simple chat")
-type = st.sidebar.selectbox(label="Select data" ,options = os.listdir("archive_2").extend("Full Data"), index =0)
-if type=="Full Data":
-    st.sidebar.text("its will take a very long time.\nSend a message than the data will load it self")
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
 
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# loading variables from .env file
+load_dotenv() 
+try: 
+    os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 
-# Accept user input
-if prompt := st.chat_input("What is up?"):
-    # Display user message in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)
+            
+    llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+  
+)
+    st.title("Simple chat")
+    type = st.sidebar.selectbox(label="Select data" ,options = os.listdir("archive_2").extend("Full Data"), index =0)
+    if type=="Full Data":
+        st.sidebar.text("its will take a very long time.\nSend a message than the data will load it self")
+    # Initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Accept user input
+    if prompt := st.chat_input("What is up?"):
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
+            
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
+
         
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("assistant"):
+            response = st.write(response_llm(prompt , type))
+            # Add assistant response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": response})
 
-    
-    with st.chat_message("assistant"):
-        response = st.write(response_llm(prompt , type))
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
+except TypeError:
+    st.error("Dont forget to create a file called .env then add a variable called `GOOGLE_API_KEY`=`Your api key` good luck")
 

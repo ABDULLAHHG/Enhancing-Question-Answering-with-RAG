@@ -31,8 +31,8 @@ st.sidebar.write("")
 
 class embedding:
     def __init__(self):
-        # self.model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+        self.model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+        # self.model = SentenceTransformer("all-MiniLM-L6-v2")
         # self.model = SentenceTransformer("intfloat/multilingual-e5-large")
     def embed_documents(self , docs):
         embeddings = self.model.encode(docs)

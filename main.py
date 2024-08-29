@@ -12,7 +12,6 @@ from langchain_community.document_loaders import DirectoryLoader
 import os 
 
 from dotenv import load_dotenv, dotenv_values 
-st.sidebar.subheader(f"settings")
 st.sidebar.write("")
 
 
@@ -135,7 +134,9 @@ try:
   
 )
     st.title("Simple chat")
-    type = st.sidebar.selectbox(label="Select data" ,options = os.listdir("archive_2").extend("Full Data"), index =0)
+    options =(os.listdir("archive_2"))
+    options.append("Full Data")
+    type = st.sidebar.selectbox(label="Select data" ,options = options, index =0)
     if type=="Full Data":
         st.sidebar.text("its will take a very long time.\nSend a message than the data will load it self")
     # Initialize chat history

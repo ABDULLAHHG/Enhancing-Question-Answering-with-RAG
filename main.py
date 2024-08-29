@@ -80,25 +80,25 @@ def response_llm(prmpt , catigory_type):
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
-# and no less than 100 words.
-# ماذا تقيم الفنانة ليتا كابيلوت
-# ما هيه الفعاليات البرنامج الثقافي لدائرة الثقافة والإعلام بالشارقة في شهر يونيو/حزيران
-    prompt = """
-You are an Ai bot your role is to answer the users questions form the knowledge 
-at the end of the answer thank the user 
-The answer must be detaild 
 
-what to do if the answer is not envluded in the prompt or the context 
+
+    prompt = """
+You are an Ai bot your role is to answer the users questions form the knowledge
+at the end of the answer thank the user
+The answer must be detaild
+
+what to do if the answer is not envluded in the prompt or the context
     1. apologies to the user.
-    2. tell the user that you do not know the answer for the asked question 
-    3. ask the user if he has more question to ask. 
+    2. tell the user that you do not know the answer for the asked question
+    3. ask the user if he has more question to ask.
     4. do not mention anything about the context.
 
 for the asnwer:
     1. The output must be the answer only without any additional thoughts..
-    2. do not answer with anything that is not in knowledge 
-    3. do not add extra words to response that is not in knowledge 
-    
+    2. do not answer with anything that is not in knowledge
+    3. do not add extra words to response that is not in knowledge
+    4. answer with arabic language only
+
 knowledge you know:
 {context}
 

@@ -1,14 +1,12 @@
 import streamlit as st 
 from sentence_transformers import SentenceTransformer
 from langchain_google_genai import ChatGoogleGenerativeAI
-
+from langchain.retrievers.merger_retriever import MergerRetriever
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 # from langchain_openai import OpenAIEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_community.document_loaders import DirectoryLoader
 import os 
 
 from dotenv import load_dotenv, dotenv_values 
@@ -43,37 +41,37 @@ class embedding:
 
 
 
-@st.cache_data
-def load_data_from_folders(main_folder_path , catigory_type):
-    data = {}
-    for category_folder in os.listdir(main_folder_path):
-        category_label = category_folder 
-        category_path = os.path.join(main_folder_path, category_folder)
-        loader = DirectoryLoader(f'{category_path}', glob="**/*.txt" ,  use_multithreading=True , show_progress=True)
-        data[category_label]= loader
+# @st.cache_data
+def load_data_from_Vector_databbase(catigory):
         
-    if catigory_type in data.keys():
-        return data[catigory_type].load()
+    if catigory in os.listdir("chroma"):
+        vector = Chroma(persist_directory =f"/content/chroma/{catigory}" , embedding_function=embedding())
+        return vector.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": 3},)
     else:
-        whole_data = []
-        for key in data.keys:
-            whole_data.extend(data[key].load())
-        return whole_data
+            # list to save vectorstors
+        vectors = []
+        # load all vector databases
+        for catigory in os.listdir("chroma"):
+            vectors.append(Chroma(persist_directory =f"/content/chroma/{catigory}" , embedding_function=embedding()))
+        # create a list of retrivers from vectores
+        search_type = "similarity"
+        retrievers = [
+            vector.as_retriever(
+                search_type=search_type,
+                search_kwargs={"k": 3},
+            )
+            for vector in vectors
+        ]
+
+        # Merge retrivers
+        merged_retrievers = MergerRetriever(retrievers=retrievers)
+        return merged_retrievers
 
 def response_llm(prmpt , catigory_type):
-    Culture = load_data_from_folders("archive_2", catigory_type)
-
-
-
-    docs = Culture
-
-
-    # text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    # splits = text_splitter.split_documents(docs)
-    vectorstore = Chroma.from_documents(documents=docs, embedding=embedding())
-
-    # Retrieve and generate using the relevant snippets of the blog.
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+   
+    retriever = load_data_from_Vector_databbase(catigory_type)
 
 
 
@@ -136,7 +134,7 @@ try:
     st.title("Simple chat")
     options =(os.listdir("archive_2"))
     options.append("Full Data")
-    type = st.sidebar.selectbox(label="Select data" ,options = options, index =0)
+    catigory_type = st.sidebar.selectbox(label="Select data" ,options = options, index =0)
     if type=="Full Data":
         st.sidebar.text("its will take a very long time.\nSend a message than the data will load it self")
     # Initialize chat history
@@ -159,7 +157,7 @@ try:
 
         
         with st.chat_message("assistant"):
-            response = st.write(response_llm(prompt , type))
+            response = st.write(response_llm(prompt , catigory_type))
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": response})
 
